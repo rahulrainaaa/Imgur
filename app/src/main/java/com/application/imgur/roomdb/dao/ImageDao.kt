@@ -16,9 +16,15 @@ interface ImageDao {
     @Query("SELECT * from Image")
     fun getAll(): LiveData<List<Image>>
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(articles: List<Image>)
+    @Query("SELECT * from Image where comment Not Null")
+    fun getSelected(): LiveData<List<Image>>
 
-    @Query("DELETE FROM Image")
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(image: List<Image>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(image: Image)
+
+    @Query("DELETE FROM Image where comment IS Null")
     suspend fun deleteAll()
 }

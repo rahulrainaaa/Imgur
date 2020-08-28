@@ -13,11 +13,12 @@ import com.application.imgur.databinding.FragmentFirstBinding
 class FirstFragment : BaseFragment() {
 
     private lateinit var binding: FragmentFirstBinding
-    private lateinit var viewModel: SharedViewModel
+    private lateinit var viewModel: FirstFragmentViewModel
+    private lateinit var imageRecyclerAdapter: ImageRecyclerAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentFirstBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(this).get(SharedViewModel::class.java).initialize(requireActivity().applicationContext)
+        viewModel = ViewModelProvider(this).get(FirstFragmentViewModel::class.java).initialize(requireActivity().applicationContext)
         setHasOptionsMenu(true)
         return binding.root
     }
@@ -37,7 +38,8 @@ class FirstFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         loadSavedInstanceAndAddObserver()
-        binding.recyclerView.adapter = ImageRecyclerAdapter(requireContext(), btnSaveOnClickListener, btnEditOnClickListener)
+        imageRecyclerAdapter = ImageRecyclerAdapter(requireContext(), btnSaveOnClickListener, btnEditOnClickListener)
+        binding.recyclerView.adapter = imageRecyclerAdapter
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.addItemDecoration(object : RecyclerView.ItemDecoration() {
             override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
@@ -61,6 +63,18 @@ class FirstFragment : BaseFragment() {
             }
             return@setOnEditorActionListener true
         }
+
+        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val lastVisiblePosition: Int = layoutManager.findLastVisibleItemPosition()
+
+                if (lastVisiblePosition == (imageRecyclerAdapter.images.size - 1) && !viewModel.flagWebImagesEof) {
+                    viewModel.fetchContent(page = viewModel.pageNo + 1, keyword = viewModel.strQuery)
+                }
+            }
+        })
     }
 
     private fun loadSavedInstanceAndAddObserver() {
@@ -77,19 +91,19 @@ class FirstFragment : BaseFragment() {
         }
     }
 
-    val btnEditOnClickListener = View.OnClickListener { btnEdit ->
+    private val btnEditOnClickListener = View.OnClickListener { btnEdit ->
 
-        toast("edit btn click")
         val position = btnEdit.tag as Int
-        val imageRecyclerAdapter = binding.recyclerView.adapter as ImageRecyclerAdapter
         imageRecyclerAdapter.setEditingPosition(position)
     }
 
-    val btnSaveOnClickListener = View.OnClickListener { btnSave ->
+    private val btnSaveOnClickListener = View.OnClickListener { btnSave ->
 
-        toast("save btn click")
         val position = btnSave.tag as Int
-        val image = viewModel.allImages.value?.get(position)
+        val image = viewModel.allImages.value!![position]
+        image.comment = imageRecyclerAdapter.getCurrentInputComment()
+        viewModel.updateDBImage(image)
+        imageRecyclerAdapter.setEditingPosition(-1)
     }
 
 }

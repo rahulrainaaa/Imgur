@@ -1,11 +1,14 @@
 package com.application.imgur
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
 class HttpHandler {
+
+    private val TAG = "HttpHandler"
 
     /**
      * Suspended method to call GET service on IO Dispatcher thread and return the model.
@@ -14,6 +17,7 @@ class HttpHandler {
 
         return withContext(Dispatchers.IO) {
 
+            Log.d(TAG, url)
             val client: OkHttpClient = OkHttpClient()
             val request = Request.Builder()
                 .addHeader("Authorization", "Client-ID 137cda6b5008a7c")

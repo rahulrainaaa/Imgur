@@ -9,7 +9,7 @@ import com.application.imgur.databinding.ItemRcCommentLayoutBinding
 import com.application.imgur.databinding.ItemRcSimpleLayoutBinding
 import com.squareup.picasso.Picasso
 
-class ImageRecyclerAdapter(private val context: Context, private val btnSaveClickListener: View.OnClickListener, private val btnEditClickListener: View.OnClickListener) :
+class ImageRecyclerAdapter(private val context: Context, private val btnSaveClickListener: View.OnClickListener? = null, private val btnEditClickListener: View.OnClickListener? = null) :
     RecyclerView.Adapter<ImageRecyclerAdapter.BaseHolder>() {
 
     open class BaseHolder(view: View) : RecyclerView.ViewHolder(view)
@@ -20,8 +20,9 @@ class ImageRecyclerAdapter(private val context: Context, private val btnSaveClic
         SimpleCell(1), CommentCell(2)
     }
 
-    private var images = emptyList<Image>()
+    var images = emptyList<Image>()
     private var editPosition = -1
+    private lateinit var commentItemCellBinding: ItemRcCommentLayoutBinding
 
     override fun getItemViewType(position: Int): Int {
         return if (position == editPosition) CellType.CommentCell.code
@@ -32,11 +33,14 @@ class ImageRecyclerAdapter(private val context: Context, private val btnSaveClic
         val inflater = LayoutInflater.from(context)
         return if (viewType == CellType.CommentCell.code) {
             val commentCellBinding = ItemRcCommentLayoutBinding.inflate(inflater, parent, false)
+            commentItemCellBinding = commentCellBinding
             commentCellBinding.imgBtnSave.setOnClickListener(btnSaveClickListener)
+            if (btnEditClickListener == null) commentCellBinding.imgBtnSave.visibility = View.GONE
             CommentItemHolder(commentCellBinding)
         } else {
             val simpleCellBinding = ItemRcSimpleLayoutBinding.inflate(inflater, parent, false)
             simpleCellBinding.imgBtnEdit.setOnClickListener(btnEditClickListener)
+            if (btnEditClickListener == null) simpleCellBinding.imgBtnEdit.visibility = View.GONE
             SimpleItemHolder(simpleCellBinding)
         }
     }
@@ -72,9 +76,10 @@ class ImageRecyclerAdapter(private val context: Context, private val btnSaveClic
 
     fun setEditingPosition(position: Int) {
         val oldEditPosition = editPosition
-        if (position >= 0) editPosition = position
-        notifyItemChanged(position)
+        if (position >= 0) notifyItemChanged(position)
+        editPosition = position
         if (oldEditPosition >= 0) notifyItemChanged(oldEditPosition)
     }
 
+    fun getCurrentInputComment() = commentItemCellBinding.etComment.text.toString()
 }

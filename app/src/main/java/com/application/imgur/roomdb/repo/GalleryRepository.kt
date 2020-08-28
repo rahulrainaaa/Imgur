@@ -10,19 +10,31 @@ import com.application.imgur.roomdb.dao.ImageDao
 class GalleryRepository(private val imageDao: ImageDao) {
 
     /**
-     * LiveData fetched from the articleDao from RoomDB.
+     * LiveData fetched from the imageDao from RoomDB.
      */
     val allImages: LiveData<List<Image>> = imageDao.getAll()
 
     /**
-     * Suspended method to insert list of Article(s) in to RoomDB.
-     *
-     * @param articles List<Article> to be inserted into DB.
+     * LiveData fetched from the imageDao from RoomDB.
      */
-    suspend fun insert(articles: List<Image>) = imageDao.insert(articles)
+    val selectedImages: LiveData<List<Image>> = imageDao.getSelected()
 
     /**
-     * Suspended method to delete all article records from DB.
+     * Suspended method to insert list of Image(s) in to RoomDB.
+     *
+     * @param images List<Image> to be inserted into DB.
+     */
+    suspend fun insert(images: List<Image>) = imageDao.insert(images)
+
+    /**
+     * Suspended method to insert or update Image data in to RoomDB.
+     *
+     * @param image image to be inserted or updated into DB.
+     */
+    suspend fun insert(image: Image) = imageDao.insert(image)
+
+    /**
+     * Suspended method to delete all image records from DB.
      */
     suspend fun deleteAll() = imageDao.deleteAll()
 
