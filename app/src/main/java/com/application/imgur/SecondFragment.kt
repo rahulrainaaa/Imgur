@@ -38,6 +38,18 @@ class SecondFragment : BaseFragment() {
             }
         })
 
-        viewModel.selectedImages.observe(viewLifecycleOwner) { images -> adapter.setData(images) }
+        viewModel.selectedImages.observe(viewLifecycleOwner) { images ->
+            adapter.setData(images)
+            binding.recyclerView.scrollToPosition(viewModel.currentRecyclerPosition)
+        }
+
+        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                val layoutManager = recyclerView.layoutManager as LinearLayoutManager
+                val lastVisiblePosition: Int = layoutManager.findLastVisibleItemPosition()
+                viewModel.currentRecyclerPosition = lastVisiblePosition
+            }
+        })
     }
 }

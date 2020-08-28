@@ -24,6 +24,7 @@ class FirstFragmentViewModel : ViewModel() {
     // Objects for saving state against screen orientation change.
     var strQuery: String = ""
     var pageNo: Int = 1
+    var currentRecyclerPosition = 0
     var initialize: Boolean = false
 
     fun initialize(context: Context): FirstFragmentViewModel {

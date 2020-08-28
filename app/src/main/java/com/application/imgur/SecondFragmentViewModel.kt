@@ -11,6 +11,7 @@ class SecondFragmentViewModel : ViewModel() {
     private lateinit var imageRepository: GalleryRepository
     lateinit var selectedImages: LiveData<List<Image>>
     private var initialize = false
+    var currentRecyclerPosition = 0
 
     fun initialize(context: Context): SecondFragmentViewModel {
         if (initialize) return this // Avoid multiple initialization.

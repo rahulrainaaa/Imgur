@@ -50,31 +50,35 @@ class FirstFragment : BaseFragment() {
             }
         })
 
-        binding.etSearch.setOnEditorActionListener { textView, actionId, _ ->
-
-            if (actionId === EditorInfo.IME_ACTION_NEXT) {
-                val strSearchKeyword = textView.text.toString()
-                if (strSearchKeyword.isNullOrBlank()) {
-                    toast(R.string.enter_search_text)
-                    return@setOnEditorActionListener false
-                }
-                hideSoftKeyboard()
-                viewModel.fetchContent(keyword = strSearchKeyword)
-            }
+        binding.etSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId === EditorInfo.IME_ACTION_NEXT) search()
             return@setOnEditorActionListener true
         }
+
+        binding.btnSearch.setOnClickListener { search() }
 
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 val layoutManager = recyclerView.layoutManager as LinearLayoutManager
                 val lastVisiblePosition: Int = layoutManager.findLastVisibleItemPosition()
-
+                viewModel.currentRecyclerPosition = lastVisiblePosition
                 if (lastVisiblePosition == (imageRecyclerAdapter.images.size - 1) && !viewModel.flagWebImagesEof) {
                     viewModel.fetchContent(page = viewModel.pageNo + 1, keyword = viewModel.strQuery)
                 }
             }
         })
+    }
+
+    private fun search() {
+
+        val strSearchKeyword = binding.etSearch.text.toString()
+        if (strSearchKeyword.isNullOrBlank()) {
+            toast(R.string.enter_search_text)
+            return
+        }
+        hideSoftKeyboard()
+        viewModel.fetchContent(keyword = strSearchKeyword)
     }
 
     private fun loadSavedInstanceAndAddObserver() {
@@ -83,6 +87,7 @@ class FirstFragment : BaseFragment() {
 
         viewModel.allImages.observe(viewLifecycleOwner) { images ->
             (binding.recyclerView.adapter as ImageRecyclerAdapter).setData(images)
+            binding.recyclerView.scrollToPosition(viewModel.currentRecyclerPosition)
         }
 
         viewModel.flagHttpProcessingLiveData.observe(viewLifecycleOwner) { isHttpProcessing ->
