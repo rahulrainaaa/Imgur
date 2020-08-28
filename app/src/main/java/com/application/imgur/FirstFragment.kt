@@ -102,6 +102,9 @@ class FirstFragment : BaseFragment() {
         val position = btnSave.tag as Int
         val image = viewModel.allImages.value!![position]
         image.comment = imageRecyclerAdapter.getCurrentInputComment()
+        if (imageRecyclerAdapter.getCurrentInputComment().isNullOrBlank()) {
+            image.comment = null
+        }
         viewModel.updateDBImage(image)
         imageRecyclerAdapter.setEditingPosition(-1)
     }
